@@ -1,0 +1,10 @@
+build/
+Builds/
+JuceLibraryCode/
+*.user
+*.suo
+.vs/
+.idea/
+cmake-build-*/
+*.vst3
+*.exe

@@ -1,0 +1,9 @@
+build*/
+_deps/
+.vs/
+*.user
+*.zip
+*.log
+preview-*.png
+dist/
+
