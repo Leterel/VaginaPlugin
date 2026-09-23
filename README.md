@@ -15,6 +15,8 @@ independent frequency bands animate simultaneously. There are no explicit visual
 
 ## Install on Windows
 
+[Download the Windows VST3 prototype](https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.0).
+
 1. Unzip the Windows x64 download.
 2. Copy the **entire `VaginaPlugin.vst3` folder** to a VST3 location scanned by your DAW,
    for example `C:\Program Files\Common Files\VST3` (administrator rights needed),

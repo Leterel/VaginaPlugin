@@ -1,4 +1,4 @@
-# Progress — 2026-09-20
+# Progress — 2026-09-23
 
 ## Requirements
 
@@ -34,4 +34,10 @@
 
 - Real DAW/soundcard testing and broader high-DPI checks.
 - Verified Linux/macOS builds and signed release binaries.
-- Repository publication/push is handled by the main coordination task.
+
+## Published
+
+- Public MIT-licensed source and Windows x64 prototype release published on
+  2026-09-23: https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.0.
+- Release binaries remain those validated on 2026-09-20; subsequent README and
+  publication-status edits do not change the compiled code.
