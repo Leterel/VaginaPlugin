@@ -57,9 +57,18 @@ int wmain(int argc, wchar_t** argv) {
     require(view->removed() == kResultOk, "remove editor");
     view->release();
   }
+  // Some DAWs keep one IPlugView alive while closing and reopening its window.
+  auto* reusedView = controller->createView(ViewType::kEditor);
+  require(reusedView != nullptr, "create reused editor view");
+  for (int cycle = 0; cycle < 20; ++cycle) {
+    require(reusedView->attached(window, kPlatformTypeHWND) == kResultOk, "reattach same editor view");
+    pump();
+    require(reusedView->removed() == kResultOk, "remove reused editor view");
+  }
+  reusedView->release();
   DestroyWindow(window);
   require(controller->terminate() == kResultOk, "terminate controller");
   controller->release(); factory->release();
   require(exitDll(), "terminate VST3 module"); FreeLibrary(library); CoUninitialize();
-  std::cout << "PASS: compiled VST3 loaded; 20 hidden native editor attach/update/detach cycles; clean unload\n";
+  std::cout << "PASS: compiled VST3 loaded; 20 new-view and 20 reused-view editor cycles; clean unload\n";
 }

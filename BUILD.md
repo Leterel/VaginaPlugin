@@ -83,8 +83,10 @@ cases with anti-phase stereo, silence release, simultaneous five-tone analysis,
 non-finite graphics protection and host output-meter queues.
 
 `editor_smoke` (Windows): loads the actual compiled VST3 DLL, creates its controller,
-attaches/updates/removes the native editor 20 times in a hidden host window, unloads.
-It does not use an installed commercial DAW.
+attaches/updates/removes 20 newly created editor views, then attaches/removes the
+same view another 20 times in a hidden host window, and unloads cleanly.
+This test uses a small native host. The separate real REAPER test is documented in
+[DAW-VERIFICATION.md](DAW-VERIFICATION.md).
 
 `visual_render` (Windows): renders the same drawing code to silent/active PNGs using
 VSTGUI's real offscreen graphics backend. Files are written in the test working folder.

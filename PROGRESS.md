@@ -32,7 +32,7 @@
 
 ## Remaining
 
-- Real DAW/soundcard testing and broader high-DPI checks.
+- Live soundcard playback, complete DAW editor stress testing and broader high-DPI checks.
 - Verified Linux/macOS builds and signed release binaries.
 
 ## Published
@@ -41,3 +41,14 @@
   2026-09-23: https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.0.
 - Release binaries remain those validated on 2026-09-20; subsequent README and
   publication-status edits do not change the compiled code.
+
+## Additional host verification — 2026-09-23
+
+- REAPER 7.80 Windows x64 instantiated the released plugin in an isolated profile.
+- Three 48 kHz stereo, 24-bit offline renders: baseline, active VST3, host bypass.
+  All 864,000 PCM bytes match exactly; the fixture includes five tones and silence.
+- Added reproducible synthetic fixture, ReaScript project setup and batch-job tools.
+- Expanded native DLL test: 20 new-view plus 20 reused-view editor cycles passed.
+- REAPER GUI stress attempt: seven cycles verified, floating window not found on
+  the eighth. This is recorded as incomplete, not a completed GUI stress pass.
+- Released plugin code and ZIP are unchanged. See DAW-VERIFICATION.md.

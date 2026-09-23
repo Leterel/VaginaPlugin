@@ -54,8 +54,11 @@ it is not built, linked, or included in the binary package.
 
 ## Prototype limits
 
-- No commercial DAW session or live soundcard was exercised here. The SDK validator,
-  direct processor tests, DLL editor lifecycle and native offscreen drawing were tested.
+- REAPER 7.80 on Windows loaded the plugin and rendered a synthetic stereo fixture
+  bit-identically with the effect active and host-bypassed. See
+  [DAW-VERIFICATION.md](DAW-VERIFICATION.md) for the reproducible test and its limits.
+- No live soundcard test. The REAPER editor stress attempt completed seven cycles;
+  the eighth could not be verified. The separate native host passed 40 editor cycles.
 - Linux and macOS have build instructions but no verified artifacts yet.
 - Fixed 960 × 600 editor; high-DPI behavior needs DAW testing.
 - Band edges follow FFT bins; they are not ideal brick-wall filters. The resolution
