@@ -1,8 +1,13 @@
-import {readFile,writeFile} from 'node:fs/promises';
+import {readFile,writeFile,stat} from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-assert(process.argv[2], 'Usage: node reaper_batch.mjs OUTPUT_DIRECTORY');
+assert(process.argv[2], 'Usage: node reaper_batch.mjs OUTPUT_DIRECTORY [EXACT_PLUGIN_BINARY]');
 const directory=path.resolve(process.argv[2]);
+const pluginBinary=process.argv[3] ? path.resolve(process.argv[3]) : null;
+if(pluginBinary) {
+  assert(!/["\r\n]/.test(pluginBinary), 'Plugin path cannot contain quote or line break');
+  assert((await stat(pluginBinary)).isFile() && pluginBinary.endsWith('.vst3'), 'Pass the inner Windows VST3 binary');
+}
 for(const name of ['baseline','active','bypassed']) {
   const lines=(await readFile(path.join(directory,name+'.rpp'),'utf8')).split(/\r?\n/);
   function block(label) {
@@ -26,6 +31,12 @@ for(const name of ['baseline','active','bypassed']) {
   // the audio engine is idle may not yet be reflected in processor state.
   if(name==='bypassed') fx=fx.replace(/^BYPASS 0 0 0$/m,'BYPASS 1 0 0');
   if(name==='bypassed') assert(/^BYPASS 1 0 0$/m.test(fx), 'Host bypass must be enabled');
+  if(pluginBinary && name!=='baseline') {
+    const original=fx;
+    fx=fx.replace(/(<VST "[^"]+" )VaginaPlugin\.vst3(?= )/,
+      (_, prefix)=>`${prefix}"${pluginBinary}"`);
+    assert(fx!==original, 'Could not pin the exact plugin file in the VST chain');
+  }
   const job=`${path.join(directory,'input.wav')}\t${path.join(directory,name+'.wav')}\n<CONFIG\nSRATE 48000\nNCH 2\nFX_NCH 2\nDITHER 0\n${format}\n${fx}\n>\n`;
   await writeFile(path.join(directory,name+'-batch.txt'),job);
 }

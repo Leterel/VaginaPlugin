@@ -1,4 +1,4 @@
-# Progress — 2026-09-23
+# Progress — 2026-09-25
 
 ## Requirements
 
@@ -52,3 +52,21 @@
 - REAPER GUI stress attempt: seven cycles verified, floating window not found on
   the eighth. This is recorded as incomplete, not a completed GUI stress pass.
 - Released plugin code and ZIP are unchanged. See DAW-VERIFICATION.md.
+
+## Version 0.1.1 — 2026-09-25
+
+- Fixed stale custom-editor meters when processing stops or the host suspends
+  audio callbacks. A callback counter keeps constant tones and stopped-transport
+  live input visible; restart clears old FFT state.
+- The open editor requests value-only snapshots through VST3 messages. Audio
+  callbacks write fixed lock-free atomics; message allocation stays on the UI thread.
+  Existing host meter parameters and state/class IDs remain compatible.
+- Late host parameter updates cannot revive a stopped snapshot. Non-finite
+  fallback meter values are sanitized before reaching the renderer.
+- Windows x64 Release: official validator 47/47; all four CTest suites passed.
+  New lifecycle suite: 353 checks, 55 allocation-audited realtime callbacks.
+  Native DLL test: 40 editor cycles with timer start/stop assertions.
+- REAPER 7.80: exact new DLL observed in the process module list during active and
+  bypassed renders. All 8,640,000 PCM bytes of a 30-second fixture match baseline.
+- Broader DAW GUI, high-DPI, physical soundcard, Linux and macOS verification remain open.
+  The older incomplete REAPER GUI stress attempt is not counted as a 0.1.1 pass.

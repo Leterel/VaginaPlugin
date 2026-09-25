@@ -25,7 +25,8 @@ void dot(CDrawContext* c,double x,double y,double r,CColor color,bool fill=true)
 class VisualView final : public CView {
 public:
   explicit VisualView(Controller* owner) : CView({0,0,960,600}), owner_(owner), started_(std::chrono::steady_clock::now()) {
-    timer_ = owned(new CVSTGUITimer([this](CVSTGUITimer*) { invalid(); }, 33));
+    owner_->requestMeterSnapshot();
+    timer_ = owned(new CVSTGUITimer([this](CVSTGUITimer*) { owner_->requestMeterSnapshot(); invalid(); }, 33));
     setMouseEnabled(false);
   }
   ~VisualView() override { timer_ = nullptr; }
@@ -50,7 +51,7 @@ public:
     c->setFrameColor(line); c->setLineWidth(1); c->drawLine({30,539},{930,539});
     dot(c,36,566,3,strongest>0.01?mint:muted);
     label(c,strongest>0.01?"LISTENING TO YOUR AUDIO":"WAITING FOR AUDIO",{48,551,490,580},11,strongest>0.01?mint:muted);
-    label(c,"VST3  /  0.1.0  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
+    label(c,"VST3  /  0.1.1  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
     setDirty(false);
   }
 private:

@@ -17,7 +17,7 @@ $packageItems = @('VaginaPlugin.vst3', 'README.md', 'BUILD.md', 'LICENSE', 'THIR
 foreach ($item in $packageItems | Select-Object -Skip 1) {
     Copy-Item -LiteralPath (Join-Path $projectDirectory $item) -Destination $outputDirectoryResolved -Recurse -Force
 }
-$archive = Join-Path $outputDirectoryResolved 'VaginaPlugin-0.1.0-win-x64.zip'
+$archive = Join-Path $outputDirectoryResolved 'VaginaPlugin-0.1.1-win-x64.zip'
 $archiveItems = $packageItems | ForEach-Object { Join-Path $outputDirectoryResolved $_ }
 Compress-Archive -LiteralPath $archiveItems -DestinationPath $archive -CompressionLevel Optimal -Force
 $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()

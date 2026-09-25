@@ -1,4 +1,4 @@
-# Building VaginaPlugin 0.1.0
+# Building VaginaPlugin 0.1.1
 
 ## Requirements
 
@@ -15,7 +15,7 @@ Run from the repository root in PowerShell:
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 18 2026" -A x64
-cmake --build build --config Release --target VaginaPlugin audio_tests editor_smoke visual_render --parallel
+cmake --build build --config Release --target VaginaPlugin audio_tests meter_lifecycle editor_smoke visual_render --parallel
 ctest --test-dir build -C Release --output-on-failure
 & .\build\bin\Release\validator.exe .\build\VST3\Release\VaginaPlugin.vst3
 ```
@@ -33,14 +33,14 @@ instructions and required license notices:
 .\scripts\package-windows.ps1 -BuildDirectory .\build -OutputDirectory .\dist
 ```
 
-The script creates `VaginaPlugin-0.1.0-win-x64.zip` and its SHA-256 checksum.
+The script creates `VaginaPlugin-0.1.1-win-x64.zip` and its SHA-256 checksum.
 
 If an unusual launcher supplies duplicate `PATH` / `Path` environment keys, Python 3
 can normalize the child environment without modifying user/system settings:
 
 ```powershell
 python scripts/run_clean.py cmake -S . -B build -G "Visual Studio 18 2026" -A x64
-python scripts/run_clean.py cmake --build build --config Release --target VaginaPlugin audio_tests editor_smoke visual_render --parallel
+python scripts/run_clean.py cmake --build build --config Release --target VaginaPlugin audio_tests meter_lifecycle editor_smoke visual_render --parallel
 ```
 
 ## Linux — prepared, not locally verified
@@ -52,7 +52,7 @@ and their development headers. Package names differ on CachyOS/Arch.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target VaginaPlugin audio_tests --parallel
+cmake --build build --target VaginaPlugin audio_tests meter_lifecycle --parallel
 ctest --test-dir build --output-on-failure
 ```
 
@@ -65,7 +65,7 @@ Install Xcode command-line tools, CMake and Git. Configure with Xcode:
 
 ```sh
 cmake -S . -B build -G Xcode
-cmake --build build --config Release --target VaginaPlugin audio_tests --parallel
+cmake --build build --config Release --target VaginaPlugin audio_tests meter_lifecycle --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
@@ -85,11 +85,22 @@ non-finite graphics protection and host output-meter queues.
 `editor_smoke` (Windows): loads the actual compiled VST3 DLL, creates its controller,
 attaches/updates/removes 20 newly created editor views, then attaches/removes the
 same view another 20 times in a hidden host window, and unloads cleanly.
+The actual processor and controller are connected through SDK interfaces; the test
+checks that editor timers exchange snapshots while open, stop polling on close,
+and restart polling when reopened.
 This test uses a small native host. The separate real REAPER test is documented in
 [DAW-VERIFICATION.md](DAW-VERIFICATION.md).
 
 `visual_render` (Windows): renders the same drawing code to silent/active PNGs using
 VSTGUI's real offscreen graphics backend. Files are written in the test working folder.
+
+`meter_lifecycle`: 353 checks using the production processor/controller and SDK
+host messages: held meter values across short callbacks, live input with stopped
+transport, stop with no following block, late host parameters, suspended callbacks,
+restart, invalid messages, disconnect and standalone controller fallback. All
+55 audited process/setProcessing calls perform zero C++ heap allocations and zero
+host message allocations; stereo samples remain bit-identical. This allocation
+audit counts C++ new/new[] (including aligned forms), not every possible OS or C allocation.
 
 The official SDK validator runs automatically after plugin linking and can also
 be called explicitly using the command above.

@@ -15,7 +15,7 @@ independent frequency bands animate simultaneously. There are no explicit visual
 
 ## Install on Windows
 
-[Download the Windows VST3 prototype](https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.0).
+[Download the Windows VST3 prototype](https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.1).
 
 1. Unzip the Windows x64 download.
 2. Copy the **entire `VaginaPlugin.vst3` folder** to a VST3 location scanned by your DAW,
@@ -37,9 +37,15 @@ This early build is unsigned.
 - Analysis uses a separate 4,096-sample Hann-window FFT with a 2,048-sample hop.
   Stereo channel energies are averaged, so anti-phase audio is still detected.
 - Fixed storage, no heap allocations, locks, network calls or file access inside
-  our audio-processing callback. Host-provided meter queues communicate with the UI.
+  our audio-processing callback. Fixed, lock-free atomics supply meter snapshots;
+  the editor exchanges VST3 messages on the UI thread. Host output-meter parameters
+  remain available for generic editors and as a compatibility fallback.
 - The display maps approximately −60 to 0 dBFS to visual strength. Attack/release
   smoothing affects graphics only. Animation refresh is about 30 fps.
+- Version 0.1.1 clears meters when processing stops, and discards old analysis on
+  restart. If a host suspends callbacks without a stop notification, meters expire
+  after 750 ms or three maximum audio blocks, whichever is longer. Constant tones
+  and live input with stopped transport remain visible while callbacks continue.
 
 ## Build / contribute
 
@@ -54,7 +60,7 @@ it is not built, linked, or included in the binary package.
 
 ## Prototype limits
 
-- REAPER 7.80 on Windows loaded the plugin and rendered a synthetic stereo fixture
+- REAPER 7.80 on Windows loaded the exact 0.1.1 binary and rendered a 30-second synthetic stereo fixture
   bit-identically with the effect active and host-bypassed. See
   [DAW-VERIFICATION.md](DAW-VERIFICATION.md) for the reproducible test and its limits.
 - No live soundcard test. The REAPER editor stress attempt completed seven cycles;
@@ -63,5 +69,5 @@ it is not built, linked, or included in the binary package.
 - Fixed 960 × 600 editor; high-DPI behavior needs DAW testing.
 - Band edges follow FFT bins; they are not ideal brick-wall filters. The resolution
   is sample-rate dependent, and frequencies above Nyquist cannot be analyzed.
-- If a host stops processing completely, the last meter reading can remain visible.
-  Sending silent blocks releases the meters normally.
+- Stop detection in the custom editor requires the host to route standard VST3
+  processor/controller messages. Generic host meter displays retain host behavior.

@@ -2,13 +2,15 @@ import { writeFile, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 const directory = process.argv[3];
-assert(directory, 'Usage: node reaper_fixture.mjs create|verify OUTPUT_DIRECTORY');
+assert(directory, 'Usage: node reaper_fixture.mjs create|verify OUTPUT_DIRECTORY [SECONDS]');
 if (process.argv[2] === 'create') {
-  const rate=48000, frames=rate*3, data=Buffer.alloc(frames*4);
+  const seconds=Number(process.argv[4] ?? 3);
+  assert(Number.isFinite(seconds) && seconds>=1 && seconds<=120, 'Fixture length must be 1 to 120 seconds');
+  const rate=48000, frames=Math.round(rate*seconds), data=Buffer.alloc(frames*4);
   const tones=[60,250,1000,3500,10000];
   for(let frame=0;frame<frames;frame++) {
     const t=frame/rate;
-    const active=t>=0.25&&t<2.75;
+    const active=t>=0.25&&t<seconds-0.25;
     for(let ch=0;ch<2;ch++) {
       const sum=active?tones.reduce((v,hz,i)=>v+Math.sin(2*Math.PI*hz*t+(ch?i*0.37:0)),0)*0.08:0;
       data.writeInt16LE(Math.round(sum*32767),frame*4+ch*2);

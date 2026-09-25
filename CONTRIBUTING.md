@@ -8,7 +8,10 @@ Contributions to the new visualizer are under the MIT license in `LICENSE`.
 
 - Keep audio bit-identical for active input; respect the host's silence flags.
 - Keep realtime processing free from heap allocation, locks, I/O and drawing.
-- Keep graphics and audio data exchange through the VST3 meter parameters.
+- Keep host meter parameters compatible. Custom-editor snapshots use lock-free
+  atomics and value-only VST3 messages sent on the UI thread. Never allocate or
+  send messages in `process()` or `setProcessing()`; never cast a host connection
+  proxy to our controller or processor type.
 - Preserve stable plugin class IDs and state compatibility.
 - Keep the visuals abstract; this project has no anatomical imagery.
 - Do not modify `legacy-original/` as part of the new implementation.
@@ -18,8 +21,8 @@ Contributions to the new visualizer are under the MIT license in `LICENSE`.
 1. Confirm installation and playback in several real Windows DAWs.
 2. Verify and automate Linux/macOS builds and host compatibility.
 3. Add scalable/high-DPI editor layouts and accessibility options.
-4. Improve transport-stop meter decay across hosts without audio-thread timers.
+4. Verify stop/resume and steady-tone behavior in additional hosts, including
+   hosts that put the processor and controller in different processes.
 
 Include relevant regression coverage for DSP or lifecycle fixes. Visual-only
 changes should include before/after renders rather than tests that mirror shapes.
-
