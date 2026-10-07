@@ -12,14 +12,31 @@ if (-not (Test-Path -LiteralPath $binary -PathType Leaf)) {
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $outputDirectoryResolved = (Resolve-Path -LiteralPath $OutputDirectory).Path
-Copy-Item -LiteralPath $bundle -Destination $outputDirectoryResolved -Recurse -Force
 $packageItems = @('VaginaPlugin.vst3', 'README.md', 'BUILD.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses')
-foreach ($item in $packageItems | Select-Object -Skip 1) {
-    Copy-Item -LiteralPath (Join-Path $projectDirectory $item) -Destination $outputDirectoryResolved -Recurse -Force
+$projectDefinition = Get-Content -LiteralPath (Join-Path $projectDirectory 'CMakeLists.txt') -Raw
+if ($projectDefinition -notmatch 'project\(VaginaPlugin VERSION ([0-9]+\.[0-9]+\.[0-9]+)') {
+    throw 'Cannot determine the package version from CMakeLists.txt.'
 }
-$archive = Join-Path $outputDirectoryResolved 'VaginaPlugin-0.1.1-win-x64.zip'
-$archiveItems = $packageItems | ForEach-Object { Join-Path $outputDirectoryResolved $_ }
-Compress-Archive -LiteralPath $archiveItems -DestinationPath $archive -CompressionLevel Optimal -Force
+$archive = Join-Path $outputDirectoryResolved "VaginaPlugin-$($Matches[1])-win-x64.zip"
+# Stage each package from scratch. Reusing an old output bundle can silently
+# include removed binaries or license files in a later release.
+$stage = Join-Path $outputDirectoryResolved ('.package-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $stage | Out-Null
+try {
+    Copy-Item -LiteralPath $bundle -Destination $stage -Recurse
+    foreach ($item in $packageItems | Select-Object -Skip 1) {
+        Copy-Item -LiteralPath (Join-Path $projectDirectory $item) -Destination $stage -Recurse
+    }
+    $archiveItems = $packageItems | ForEach-Object { Join-Path $stage $_ }
+    Compress-Archive -LiteralPath $archiveItems -DestinationPath $archive -CompressionLevel Optimal -Force
+} finally {
+    $stageResolved = (Resolve-Path -LiteralPath $stage).Path
+    if ((Split-Path $stageResolved -Parent) -ne $outputDirectoryResolved -or
+        (Split-Path $stageResolved -Leaf) -notmatch '^\.package-[0-9a-f]{32}$') {
+        throw "Refusing to clean an unexpected staging path: $stageResolved"
+    }
+    Remove-Item -LiteralPath $stageResolved -Recurse -Force
+}
 $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
 "$hash  $(Split-Path $archive -Leaf)" | Set-Content -LiteralPath "$archive.sha256" -Encoding ascii
 Get-Item -LiteralPath $archive | Select-Object FullName, Length

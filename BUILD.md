@@ -34,6 +34,14 @@ instructions and required license notices:
 ```
 
 The script creates `VaginaPlugin-0.1.1-win-x64.zip` and its SHA-256 checksum.
+Each run uses a fresh temporary staging directory, so leftover files in the
+output directory cannot enter a release. The version is read from CMakeLists.txt.
+To verify repeated packaging, the bundle structure, required license files and
+the checksum:
+
+```powershell
+.\scripts\test-package-windows.ps1 -BuildDirectory .\build
+```
 
 If an unusual launcher supplies duplicate `PATH` / `Path` environment keys, Python 3
 can normalize the child environment without modifying user/system settings:

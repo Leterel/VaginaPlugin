@@ -70,3 +70,17 @@
   bypassed renders. All 8,640,000 PCM bytes of a 30-second fixture match baseline.
 - Broader DAW GUI, high-DPI, physical soundcard, Linux and macOS verification remain open.
   The older incomplete REAPER GUI stress attempt is not counted as a 0.1.1 pass.
+
+## Packaging maintenance and regression verification — 2026-10-07
+
+- Packaging now starts from a fresh staging directory, excluding stale files
+  left in a previous output bundle. Package version comes from CMakeLists.txt.
+- Added a regression check that packages twice into the same output directory
+  containing a stale sentinel; both archives exclude it, retain the complete
+  VST3 bundle and license notices, and have correct SHA-256 sidecars.
+- Existing Windows 0.1.1 binaries rechecked: all four CTest suites passed
+  (15.49 seconds), and the official validator reported 47 passed, 0 failed.
+  No plugin source or binary changed in this maintenance update.
+- A Linux WSL availability probe returned Wsl/Service/E_ACCESSDENIED in this
+  execution environment. Linux/macOS and additional DAW tests remain unverified;
+  this update does not turn them into verified release targets.
