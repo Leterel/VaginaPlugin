@@ -2,6 +2,13 @@
 #include "Controller.h"
 #include "vstgui/lib/cgraphicspath.h"
 #include "vstgui/lib/cvstguitimer.h"
+#if defined(__linux__)
+#include "vstgui/lib/platform/platform_x11.h"
+#include "vstgui/lib/platform/platformfactory.h"
+#include "vstgui/lib/platform/linux/linuxfactory.h"
+#include "vstgui/lib/platform/linux/x11platform.h"
+#include "public.sdk/source/main/moduleinit.h"
+#endif
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -10,6 +17,14 @@
 using namespace VSTGUI;
 namespace Meme {
 namespace {
+#if defined(__linux__)
+// Cairo can retain an XCB device between editor instances. Keep the connection
+// alive until module teardown, before the SDK tears down the graphics factory.
+bool x11ConnectionHeld = false;
+Steinberg::ModuleTerminator releaseX11Connection([] {
+  if (x11ConnectionHeld) { VSTGUI::X11::RunLoop::exit(); x11ConnectionHeld = false; }
+}, 0);
+#endif
 const CColor background{12,14,22,255}, panel{21,24,35,255}, line{39,45,62,255}, text{239,242,249,255}, muted{136,148,173,255}, mint{149,247,217,255};
 const std::array<CColor,5> colors{{{178,121,80,255},{247,86,104,255},{254,211,94,255},{240,241,251,255},{151,207,241,180}}};
 const char* names[] = {"CYLINDER", "FLOW", "ARC", "DROPS", "PARTICLES"};
@@ -112,8 +127,21 @@ Editor::Editor(Controller* controller) : VSTGUIEditor(controller), owner_(contro
 VSTGUI::CView* createVisualView(Controller* controller){return new VisualView(controller);}
 bool PLUGIN_API Editor::open(void* parent,const PlatformType& platform) {
   if(frame) return false;
+#if defined(__linux__)
+  // X11 frame creation requires the SDK-provided host event loop in its config.
+  // Without it VSTGUI constructs the window before initializing its XCB connection.
+  VSTGUI::X11::FrameConfig config;
+  auto* linuxFactory = VSTGUI::getPlatformFactory().asLinuxFactory();
+  if (!linuxFactory || !linuxFactory->getRunLoop()) return false;
+  config.runLoop = linuxFactory->getRunLoop();
+  if (!x11ConnectionHeld) { VSTGUI::X11::RunLoop::init(); x11ConnectionHeld = true; }
+#endif
   frame=new CFrame({0,0,960,600},this);
+#if defined(__linux__)
+  if(!frame->open(parent,platform,&config)){frame->forget();frame=nullptr;return false;}
+#else
   if(!frame->open(parent,platform)){frame->forget();frame=nullptr;return false;}
+#endif
   frame->addView(createVisualView(owner_));return true;
 }
 // CFrame::close releases its own final reference. The SDK also reads this frame.

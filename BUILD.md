@@ -51,7 +51,7 @@ python scripts/run_clean.py cmake -S . -B build -G "Visual Studio 18 2026" -A x6
 python scripts/run_clean.py cmake --build build --config Release --target VaginaPlugin audio_tests meter_lifecycle editor_smoke visual_render --parallel
 ```
 
-## Linux — prepared, not locally verified
+## Linux — Ubuntu 24.04 / X11 verified
 
 Install a C++17 compiler, CMake, Git and the VSTGUI development dependencies listed
 in the [official setup guide](https://steinbergmedia.github.io/vst3_dev_portal/pages/Getting+Started/How+to+setup+my+system.html).
@@ -60,12 +60,25 @@ and their development headers. Package names differ on CachyOS/Arch.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target VaginaPlugin audio_tests meter_lifecycle --parallel
+cmake --build build --target VaginaPlugin audio_tests meter_lifecycle editor_smoke_linux --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-Find the generated `.vst3` bundle under `build/VST3/`. Once verified in a host,
-copy the entire bundle to `~/.vst3/`. Native Wayland hosting is not verified.
+Install Xvfb for headless editor testing (`xvfb-run` is discovered by CMake).
+On 12 October 2026, Ubuntu 24.04 under WSL passed the official validator 47/47,
+audio tests, 353 lifecycle checks and 40 editor cycles using an isolated X11
+server. This is not a Linux DAW or Wayland test.
+
+Find the generated `.vst3` bundle under `build/VST3/`. Copy the entire bundle
+to `~/.vst3/` when you choose to test it in your DAW. Package after tests:
+
+```sh
+bash scripts/package-linux.sh build-linux /path/to/new-output-directory
+```
+
+The Linux x64 tar.gz includes the complete bundle, license notices and checksum.
+The script refuses to replace an existing archive. Native Wayland, CachyOS,
+physical audio hardware and additional Linux DAWs remain unverified.
 
 ## macOS — prepared, not locally verified
 

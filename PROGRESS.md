@@ -1,5 +1,17 @@
 # Progress — 2026-09-25
 
+## Linux build and editor fixes — 2026-10-12
+
+- Built Linux x64 on Ubuntu 24.04 under WSL with the pinned official SDK.
+- Fixed missing X11 frame/run-loop configuration and retained the XCB connection
+  until module teardown, preventing crashes during opening and repeated reopening.
+- Official validator: 47 passed, 0 failed. All three Linux CTest suites passed:
+  audio, 353 lifecycle checks and 40 real X11 editor cycles (24.62 seconds total).
+- The isolated Xvfb host completes XEmbed, captures only its synthetic window,
+  verifies colored rendering, closed-editor polling stop and clean module unload.
+- Added Linux packaging with complete bundle/license notices and checksum.
+- No Linux DAW, native Wayland, CachyOS or macOS test is claimed.
+
 ## Requirements
 
 - Open-source VST3 using current official SDK; Windows binary first.
