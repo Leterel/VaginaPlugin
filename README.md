@@ -47,6 +47,9 @@ This early build is unsigned.
   after 750 ms or three maximum audio blocks, whichever is longer. Constant tones
   and live input with stopped transport remain visible while callbacks continue.
 
+Source version 0.1.2 adds host-driven editor scaling; the published 0.1.1 download
+above predates this change. See [PROGRESS.md](PROGRESS.md) for verification.
+
 ## Build / contribute
 
 See [BUILD.md](BUILD.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [PROGRESS.md](PROGRESS.md).
@@ -66,7 +69,9 @@ it is not built, linked, or included in the binary package.
 - No live soundcard test. The REAPER editor stress attempt completed seven cycles;
   the eighth could not be verified. The separate native host passed 40 editor cycles.
 - Linux x64 was built on Ubuntu 24.04 under WSL and passed the official validator and Xvfb editor tests. No Linux DAW, CachyOS or native Wayland test is claimed. macOS remains unverified; see PROGRESS.md.
-- Fixed 960 × 600 editor; high-DPI behavior needs DAW testing.
+- Fixed 960 x 600 logical canvas with host-requested 50-400% content scaling.
+  Native Windows host tests cover scaling and reopening; real DAW and multi-monitor
+  DPI testing remains open.
 - Band edges follow FFT bins; they are not ideal brick-wall filters. The resolution
   is sample-rate dependent, and frequencies above Nyquist cannot be analyzed.
 - Stop detection in the custom editor requires the host to route standard VST3

@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <objbase.h>
 #include "Ids.h"
+#include "base/source/fobject.h"
 #include "pluginterfaces/base/ipluginbase.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/gui/iplugview.h"
@@ -10,6 +11,8 @@
 #include "public.sdk/source/vst/hosting/hostclasses.h"
 #include <cstdlib>
 #include <iostream>
+#include <limits>
+#include "pluginterfaces/gui/iplugviewcontentscalesupport.h"
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
@@ -34,6 +37,24 @@ public:
     return HostApplication::createInstance(cid, iid, object);
   }
 };
+class ResizeHost final : public FObject, public IPlugFrame {
+public:
+  bool reject = false;
+  int requests = 0;
+  tresult PLUGIN_API resizeView(IPlugView* view, ViewRect* size) override {
+    ++requests;
+    return reject ? kResultFalse : view->onSize(size);
+  }
+  DEFINE_INTERFACES
+    DEF_INTERFACE(IPlugFrame)
+  END_DEFINE_INTERFACES(FObject)
+  REFCOUNT_METHODS(FObject)
+};
+void expectSize(IPlugView* view, int width, int height) {
+  ViewRect size{};
+  require(view->getSize(&size) == kResultOk && size.getWidth() == width && size.getHeight() == height,
+          "host-visible scaled dimensions");
+}
 int wmain(int argc, wchar_t** argv) {
   require(argc == 2, "plugin DLL argument required");
   CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
@@ -96,6 +117,42 @@ int wmain(int argc, wchar_t** argv) {
     require(reusedView->removed() == kResultOk, "remove reused editor view");
   }
   reusedView->release();
+  // Exercise the optional VST3 scaling interface against the compiled DLL.
+  auto* scaledView = controller->createView(ViewType::kEditor);
+  FUnknownPtr<IPlugViewContentScaleSupport> scaling(scaledView);
+  require(scaling != nullptr, "content scale interface available");
+  require(scaling->setContentScaleFactor(1.5f) == kResultTrue, "scale before frame/attachment");
+  expectSize(scaledView, 1440, 900);
+  auto resizeHost = owned(new ResizeHost);
+  require(scaledView->setFrame(resizeHost) == kResultTrue, "install resize host");
+  for (int cycle = 0; cycle < 4; ++cycle) {
+    require(scaledView->attached(window, kPlatformTypeHWND) == kResultOk, "attach scaled editor");
+    for (float factor : {1.0f, 1.25f, 1.5f, 2.0f, 3.0f, 4.0f, 0.5f, 1.5f}) {
+      require(scaling->setContentScaleFactor(factor) == kResultTrue, "change scale while open");
+      expectSize(scaledView, int(960 * factor), int(600 * factor));
+      HWND child = GetWindow(window, GW_CHILD);
+      RECT client{};
+      require(child && GetClientRect(child, &client) && client.right == int(960 * factor) &&
+              client.bottom == int(600 * factor), "native child follows content scale");
+      pump();
+    }
+    const int beforeInvalid = resizeHost->requests;
+    for (float invalid : {0.f, -1.f, 4.1f, std::numeric_limits<float>::infinity(),
+                          std::numeric_limits<float>::quiet_NaN()})
+      require(scaling->setContentScaleFactor(invalid) == kInvalidArgument, "reject invalid scale");
+    require(resizeHost->requests == beforeInvalid, "invalid scale never resizes host");
+    resizeHost->reject = true;
+    require(scaling->setContentScaleFactor(2.f) == kResultFalse, "respect host resize refusal");
+    expectSize(scaledView, 1440, 900);
+    resizeHost->reject = false;
+    require(scaledView->removed() == kResultOk, "remove scaled editor");
+    const int afterClose = host->messages;
+    pump();
+    require(host->messages == afterClose, "scaled closed editor stops polling");
+  }
+  scaledView->setFrame(nullptr);
+  scaling = nullptr;
+  scaledView->release();
   DestroyWindow(window);
   require(processor->setProcessing(false) == kResultOk && component->setActive(false) == kResultOk, "deactivate processor");
   controllerConnection->disconnect(processorConnection); processorConnection->disconnect(controllerConnection);
@@ -104,5 +161,5 @@ int wmain(int argc, wchar_t** argv) {
   require(controller->terminate() == kResultOk, "terminate controller");
   controller->release(); factory->release();
   require(exitDll(), "terminate VST3 module"); FreeLibrary(library); CoUninitialize();
-  std::cout << "PASS: compiled VST3; 20 new-view and 20 reused-view cycles; real snapshot timer starts/stops; clean unload\n";
+  std::cout << "PASS: compiled VST3; 20 new-view and 20 reused-view cycles; real snapshot timer starts/stops; 32 live scale changes and reopen/refusal checks; clean unload\n";
 }

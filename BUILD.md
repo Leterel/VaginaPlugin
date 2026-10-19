@@ -125,3 +125,18 @@ audit counts C++ new/new[] (including aligned forms), not every possible OS or C
 
 The official SDK validator runs automatically after plugin linking and can also
 be called explicitly using the command above.
+
+## Windows content-scale regression (0.1.2)
+
+`editor_smoke` now also queries the actual DLL's `IPlugViewContentScaleSupport`.
+It checks dimensions before attachment, 32 live scale changes from 50% to 400%,
+actual native child sizes, four reopenings, invalid values, host resize refusal,
+and stopped polling after close. These are native host tests, not DAW or physical
+multi-monitor certification. Hosts must send the standard content scale factor;
+the logical canvas remains 960 x 600.
+
+If MSBuild parallel workers cannot start in a restricted runner, use:
+
+```powershell
+cmake --build build-release --config Release --target VaginaPlugin audio_tests meter_lifecycle editor_smoke visual_render -- /m:1 /nr:false /v:minimal
+```

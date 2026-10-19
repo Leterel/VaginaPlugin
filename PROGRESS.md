@@ -103,3 +103,19 @@
 Updated README and remaining-work list to reflect the existing 2026-10-12 Linux
 Ubuntu/WSL build and Xvfb verification. Linux DAW, native Wayland/CachyOS and macOS
 remain unverified. No source, binary or new host-test claim in this documentation change.
+
+## Host-driven content scaling (0.1.2) - 2026-10-19
+
+- Implemented the standard VST3 content-scale interface using VSTGUI scene zoom.
+  The host receives the new size, including calls before attachment; rejected
+  host resizes restore the prior zoom and dimensions. Invalid and non-finite
+  factors are rejected; supported range is 50-400%.
+- Windows x64 Release rebuilt: official validator 47 passed, 0 failed. All four
+  CTest suites passed (14.87 seconds), including 32 live scale changes, native
+  child geometry, four reopenings, resize refusal and invalid-value regression
+  checks in the loaded DLL. Existing 40 editor cycles and timer checks still pass.
+- Repeated ZIP packaging regression passed, preserving bundle/licenses/checksum.
+- A fresh REAPER offline attempt could not launch: Windows returned illegal
+  system DLL relocation from Start-Process. No new DAW pass is claimed for 0.1.2.
+  Prior 0.1.1 DAW evidence remains specific to that earlier binary. Physical
+  audio, DAW high-DPI/multi-monitor use, Linux DAW/Wayland and macOS remain open.

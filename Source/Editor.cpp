@@ -66,7 +66,7 @@ public:
     c->setFrameColor(line); c->setLineWidth(1); c->drawLine({30,539},{930,539});
     dot(c,36,566,3,strongest>0.01?mint:muted);
     label(c,strongest>0.01?"LISTENING TO YOUR AUDIO":"WAITING FOR AUDIO",{48,551,490,580},11,strongest>0.01?mint:muted);
-    label(c,"VST3  /  0.1.1  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
+    label(c,"VST3  /  0.1.2  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
     setDirty(false);
   }
 private:
@@ -142,7 +142,30 @@ bool PLUGIN_API Editor::open(void* parent,const PlatformType& platform) {
 #else
   if(!frame->open(parent,platform)){frame->forget();frame=nullptr;return false;}
 #endif
-  frame->addView(createVisualView(owner_));return true;
+  frame->addView(createVisualView(owner_));
+  frame->setZoom(contentScale_);
+  return true;
+}
+Steinberg::tresult PLUGIN_API Editor::setContentScaleFactor(ScaleFactor factor) {
+  // Hosts may call this before attachment, while open, or between reopenings.
+  // Keep the logical canvas fixed and scale the complete VSTGUI scene.
+  if (!std::isfinite(factor) || factor < 0.5f || factor > 4.0f)
+    return Steinberg::kInvalidArgument;
+  if (contentScale_ == factor) return Steinberg::kResultTrue;
+  const auto previousRect = rect;
+  const auto previousScale = contentScale_;
+  Steinberg::ViewRect requested{0, 0, static_cast<Steinberg::int32>(std::lround(960 * factor)),
+                              static_cast<Steinberg::int32>(std::lround(600 * factor))};
+  if (frame && !frame->setZoom(factor)) return Steinberg::kResultFalse;
+  contentScale_ = factor;
+  rect = requested;
+  if (plugFrame && plugFrame->resizeView(this, &requested) != Steinberg::kResultTrue) {
+    contentScale_ = previousScale;
+    rect = previousRect;
+    if (frame) frame->setZoom(previousScale);
+    return Steinberg::kResultFalse;
+  }
+  return Steinberg::kResultTrue;
 }
 // CFrame::close releases its own final reference. The SDK also reads this frame.
 void PLUGIN_API Editor::close(){if(frame){auto* closing=frame;frame=nullptr;closing->close();}}

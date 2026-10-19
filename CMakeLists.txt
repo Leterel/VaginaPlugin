@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(VaginaPlugin VERSION 0.1.1 LANGUAGES CXX)
+project(VaginaPlugin VERSION 0.1.2 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
