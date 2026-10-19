@@ -65,7 +65,7 @@ it is not built, linked, or included in the binary package.
   [DAW-VERIFICATION.md](DAW-VERIFICATION.md) for the reproducible test and its limits.
 - No live soundcard test. The REAPER editor stress attempt completed seven cycles;
   the eighth could not be verified. The separate native host passed 40 editor cycles.
-- Linux and macOS have build instructions but no verified artifacts yet.
+- Linux x64 was built on Ubuntu 24.04 under WSL and passed the official validator and Xvfb editor tests. No Linux DAW, CachyOS or native Wayland test is claimed. macOS remains unverified; see PROGRESS.md.
 - Fixed 960 × 600 editor; high-DPI behavior needs DAW testing.
 - Band edges follow FFT bins; they are not ideal brick-wall filters. The resolution
   is sample-rate dependent, and frequencies above Nyquist cannot be analyzed.

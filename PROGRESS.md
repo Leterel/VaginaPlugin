@@ -45,7 +45,7 @@
 ## Remaining
 
 - Live soundcard playback, complete DAW editor stress testing and broader high-DPI checks.
-- Verified Linux/macOS builds and signed release binaries.
+- Linux DAW and native Wayland/CachyOS tests; verified macOS builds and signed release binaries. Linux Ubuntu/WSL build and Xvfb editor checks passed on 2026-10-12 (see above).
 
 ## Published
 
@@ -96,3 +96,10 @@
 - A Linux WSL availability probe returned Wsl/Service/E_ACCESSDENIED in this
   execution environment. Linux/macOS and additional DAW tests remain unverified;
   this update does not turn them into verified release targets.
+
+
+## Documentation consistency — 2026-10-19
+
+Updated README and remaining-work list to reflect the existing 2026-10-12 Linux
+Ubuntu/WSL build and Xvfb verification. Linux DAW, native Wayland/CachyOS and macOS
+remain unverified. No source, binary or new host-test claim in this documentation change.
