@@ -30,10 +30,10 @@ local function save(name)
   note('Saved ' .. name .. '.rpp')
 end
 save('baseline')
-local fx = reaper.TrackFX_AddByName(track, 'VST3: VaginaPlugin (Leterel)', false, -1)
-check(fx >= 0, 'VaginaPlugin instantiated')
+local fx = reaper.TrackFX_AddByName(track, 'VST3: vajayjay (Leterel)', false, -1)
+check(fx >= 0, 'vajayjay instantiated')
 local ok,name = reaper.TrackFX_GetFXName(track, fx)
-check(ok and name:find('VaginaPlugin', 1, true), 'Correct plugin identified')
+check(ok and name:find('vajayjay', 1, true), 'Correct plugin identified')
 check(not reaper.TrackFX_GetOffline(track, fx), 'Plugin is online')
 note('Loaded ' .. name)
 local bypass = nil

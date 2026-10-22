@@ -5,19 +5,19 @@ param(
 $ErrorActionPreference = 'Stop'
 $projectDirectory = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $buildDirectoryResolved = (Resolve-Path -LiteralPath $BuildDirectory).Path
-$bundle = Join-Path $buildDirectoryResolved 'VST3\Release\VaginaPlugin.vst3'
-$binary = Join-Path $bundle 'Contents\x86_64-win\VaginaPlugin.vst3'
+$bundle = Join-Path $buildDirectoryResolved 'VST3\Release\vajayjay.vst3'
+$binary = Join-Path $bundle 'Contents\x86_64-win\vajayjay.vst3'
 if (-not (Test-Path -LiteralPath $binary -PathType Leaf)) {
     throw "Build the Windows x64 Release plugin first: missing $binary"
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $outputDirectoryResolved = (Resolve-Path -LiteralPath $OutputDirectory).Path
-$packageItems = @('VaginaPlugin.vst3', 'README.md', 'BUILD.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses')
+$packageItems = @('vajayjay.vst3', 'README.md', 'BUILD.md', 'PROGRESS.md', 'CONTRIBUTING.md', 'VERIFICATION-0.1.3.md', 'DAW-VERIFICATION.md', 'LINUX-VERIFICATION.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses')
 $projectDefinition = Get-Content -LiteralPath (Join-Path $projectDirectory 'CMakeLists.txt') -Raw
 if ($projectDefinition -notmatch 'project\(VaginaPlugin VERSION ([0-9]+\.[0-9]+\.[0-9]+)') {
     throw 'Cannot determine the package version from CMakeLists.txt.'
 }
-$archive = Join-Path $outputDirectoryResolved "VaginaPlugin-$($Matches[1])-win-x64.zip"
+$archive = Join-Path $outputDirectoryResolved "vajayjay-$($Matches[1])-win-x64.zip"
 # Stage each package from scratch. Reusing an old output bundle can silently
 # include removed binaries or license files in a later release.
 $stage = Join-Path $outputDirectoryResolved ('.package-' + [guid]::NewGuid().ToString('N'))

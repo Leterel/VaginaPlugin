@@ -19,20 +19,23 @@ int main() {
   auto* controller=new Meme::Controller;
   if(controller->initialize(nullptr)!=Steinberg::kResultOk)return 1;
   {
-    auto view=VSTGUI::owned(Meme::createVisualView(controller));
     auto context=VSTGUI::COffscreenContext::create({960,600});
     if(!context)return 1;
-    for(int active=0;active<2;++active){
-      for(int band=0;band<5;++band)controller->setParamNormalized(Meme::meterBase+band,active?0.87:0.0);
+    struct Scene { const char* file; double meter, time; };
+    const Scene scenes[]={{"preview-silent.png",0.0,0.29},{"preview-active.png",0.87,0.29},
+                          {"preview-contracted.png",0.87,0.0},{"preview-low.png",0.35,0.49}};
+    for(const auto& scene:scenes){
+      auto view=VSTGUI::owned(Meme::createVisualView(controller,scene.time));
+      for(int band=0;band<5;++band)controller->setParamNormalized(Meme::meterBase+band,scene.meter);
       for(int frame=0;frame<40;++frame){context->beginDraw();view->draw(context);context->endDraw();}
       auto png=VSTGUI::getPlatformFactory().createBitmapMemoryPNGRepresentation(context->getBitmap()->getPlatformBitmap());
       if(png.empty())return 1;
-      std::ofstream file(active?"preview-active.png":"preview-silent.png",std::ios::binary);
+      std::ofstream file(scene.file,std::ios::binary);
       file.write(reinterpret_cast<const char*>(png.data()),png.size());
       if(!file)return 1;
     }
   }
   controller->terminate();controller->release();
   DeinitModule();CoUninitialize();
-  std::cout<<"PASS: actual VSTGUI drawing rendered silent/active PNGs offscreen\n";
+  std::cout<<"PASS: actual VSTGUI drawing rendered silent, extended, contracted and low-energy PNGs at fixed times\n";
 }

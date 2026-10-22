@@ -27,7 +27,7 @@ Steinberg::ModuleTerminator releaseX11Connection([] {
 #endif
 const CColor background{12,14,22,255}, panel{21,24,35,255}, line{39,45,62,255}, text{239,242,249,255}, muted{136,148,173,255}, mint{149,247,217,255};
 const std::array<CColor,5> colors{{{178,121,80,255},{247,86,104,255},{254,211,94,255},{240,241,251,255},{151,207,241,180}}};
-const char* names[] = {"CYLINDER", "FLOW", "ARC", "DROPS", "PARTICLES"};
+const char* names[] = {"EXTRUSION", "FLOW", "ARC", "DROPS", "PARTICLES"};
 const char* ranges[] = {"< 100 Hz", "100 - 500 Hz", "500 - 2k Hz", "2k - 6k Hz", "6k - 20k Hz"};
 void label(CDrawContext* context, const char* content, CRect rect, double size, CColor color, CHoriTxtAlign alignment=kLeftText) {
   context->setFont(kNormalFont, size); context->setFontColor(color); context->drawString(content, rect, alignment);
@@ -39,7 +39,7 @@ void dot(CDrawContext* c,double x,double y,double r,CColor color,bool fill=true)
 }
 class VisualView final : public CView {
 public:
-  explicit VisualView(Controller* owner) : CView({0,0,960,600}), owner_(owner), started_(std::chrono::steady_clock::now()) {
+  explicit VisualView(Controller* owner, double fixedTime) : CView({0,0,960,600}), owner_(owner), started_(std::chrono::steady_clock::now()), fixedTime_(fixedTime) {
     owner_->requestMeterSnapshot();
     timer_ = owned(new CVSTGUITimer([this](CVSTGUITimer*) { owner_->requestMeterSnapshot(); invalid(); }, 33));
     setMouseEnabled(false);
@@ -47,11 +47,11 @@ public:
   ~VisualView() override { timer_ = nullptr; }
   void draw(CDrawContext* c) override {
     const auto now=std::chrono::steady_clock::now();
-    const double seconds=std::chrono::duration<double>(now-started_).count();
+    const double seconds=fixedTime_ >= 0 ? fixedTime_ : std::chrono::duration<double>(now-started_).count();
     c->setDrawMode(kAntiAliasing);
     c->setFillColor(background); c->drawRect(getViewSize(),kDrawFilled);
     label(c,"LETEREL  /  EXPERIMENTAL AUDIO LAB",{30,18,670,43},11,muted);
-    label(c,"VaginaPlugin",{28,44,700,97},36,text);
+    label(c,"vajayjay",{28,44,700,97},36,text);
     label(c,"FIVE BANDS. ZERO SOUND CHANGES.",{30,100,690,125},12,muted);
     c->setFillColor({24,47,44,255}); c->drawRect({754,48,930,80},kDrawFilled);
     label(c,"AUDIO PASSTHROUGH",{763,50,921,78},11,mint,kCenterText);
@@ -66,7 +66,7 @@ public:
     c->setFrameColor(line); c->setLineWidth(1); c->drawLine({30,539},{930,539});
     dot(c,36,566,3,strongest>0.01?mint:muted);
     label(c,strongest>0.01?"LISTENING TO YOUR AUDIO":"WAITING FOR AUDIO",{48,551,490,580},11,strongest>0.01?mint:muted);
-    label(c,"VST3  /  0.1.2  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
+    label(c,"VST3  /  0.1.3  /  ABSTRACT VISUALIZER",{500,551,930,580},10,muted,kRightText);
     setDirty(false);
   }
 private:
@@ -79,15 +79,24 @@ private:
     for(int row=0;row<7;++row)c->drawLine({x+13,239.0+row*29},{x+159,239.0+row*29});
     const double energy=std::clamp((meter-0.12)/0.88,0.0,1.0);
     const CColor color=colors[band];
+    if(band==0) {
+      // A fixed mechanical opening remains visible in silence. The extrusion
+      // always starts at its centre, rather than translating a complete object.
+      c->setFillColor({49,55,69,255});c->drawRect({cx-56,246,cx+56,269},kDrawFilled);
+      c->setFillColor({7,9,14,255});c->drawEllipse({cx-38,254,cx+38,275},kDrawFilled);
+      c->setFrameColor({82,91,108,255});c->setLineWidth(1.5);c->drawEllipse({cx-38,254,cx+38,275},kDrawStroked);
+    }
     // All shapes occupy separate abstract instrument cells; there is no anatomy.
     if(energy>0.003) {
       if(band==0) {
-        const double phase=fract(t*(0.6+1.6*energy));
-        const double y=261+phase*127, r=15+energy*17, h=25+energy*45;
+        const double pulse=0.5-0.5*std::cos(t*(0.7+1.2*energy)*6.283185307179586);
+        const double y=264, r=12+energy*12, h=8+energy*(28+128*pulse);
         c->setFillColor(color);c->drawRect({cx-r,y,cx+r,y+h},kDrawFilled);
-        dot(c,cx,y+h,r,color);
-        c->setFillColor({216,162,112,255});c->drawEllipse({cx-r,y-r*0.38,cx+r,y+r*0.38},kDrawFilled);
-        c->setFrameColor({234,183,133,255});c->setLineWidth(2);c->drawLine({cx-r+5,y+8},{cx-r+5,y+h-7});
+        c->drawEllipse({cx-r,y+h-r*0.45,cx+r,y+h+r*0.45},kDrawFilled);
+        c->setFrameColor({221,172,124,255});c->setLineWidth(2);c->drawLine({cx-r+5,y+4},{cx-r+5,y+h});
+        // Front lip occludes the root, making the material emerge from the slot.
+        c->setFillColor({49,55,69,255});c->drawRect({cx-43,249,cx+43,262},kDrawFilled);
+        c->setFrameColor({92,101,117,255});c->setLineWidth(1);c->drawLine({cx-43,262},{cx+43,262});
       } else if(band==1) {
         const double width=2+energy*10, wave=14*std::sin(t*2);
         auto path=owned(c->createGraphicsPath());path->beginSubpath(cx-width,250);
@@ -119,12 +128,13 @@ private:
   Controller* owner_;
   SharedPointer<CVSTGUITimer> timer_;
   std::chrono::steady_clock::time_point started_;
+  double fixedTime_;
   std::array<double,5> displayed_{};
 };
 Editor::Editor(Controller* controller) : VSTGUIEditor(controller), owner_(controller) {
   rect={0,0,960,600};
 }
-VSTGUI::CView* createVisualView(Controller* controller){return new VisualView(controller);}
+VSTGUI::CView* createVisualView(Controller* controller, double fixedTime){return new VisualView(controller,fixedTime);}
 bool PLUGIN_API Editor::open(void* parent,const PlatformType& platform) {
   if(frame) return false;
 #if defined(__linux__)

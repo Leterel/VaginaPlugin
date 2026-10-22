@@ -4,7 +4,8 @@
 namespace Meme {
 class Controller;
 class VisualView;
-VSTGUI::CView* createVisualView(Controller*);
+// A nonnegative fixed time is for deterministic offscreen visual verification.
+VSTGUI::CView* createVisualView(Controller*, double fixedTimeSeconds = -1.0);
 class Editor final : public Steinberg::Vst::VSTGUIEditor, public Steinberg::IPlugViewContentScaleSupport {
 public:
   explicit Editor(Controller*);

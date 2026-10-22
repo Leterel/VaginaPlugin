@@ -24,7 +24,7 @@ for(const name of ['baseline','active','bypassed']) {
   const format=block('RENDER_CFG').replace('<RENDER_CFG','<OUTFMT');
   assert(format, 'Missing render format in saved project');
   let fx=block('FXCHAIN');
-  if(name!=='baseline'&&!fx.includes('VaginaPlugin'))throw new Error('Missing plugin in FX chain');
+  if(name!=='baseline'&&!fx.includes('vajayjay'))throw new Error('Missing plugin in FX chain');
   if(name==='baseline') assert(!fx.includes('<VST'), 'Baseline must have no VST');
   if(name==='active') assert(/^BYPASS 0 0 0$/m.test(fx), 'Active plugin must be enabled and online');
   // Host bypass is serialized explicitly. A controller parameter changed while
@@ -33,7 +33,7 @@ for(const name of ['baseline','active','bypassed']) {
   if(name==='bypassed') assert(/^BYPASS 1 0 0$/m.test(fx), 'Host bypass must be enabled');
   if(pluginBinary && name!=='baseline') {
     const original=fx;
-    fx=fx.replace(/(<VST "[^"]+" )VaginaPlugin\.vst3(?= )/,
+    fx=fx.replace(/(<VST "[^"]+" )vajayjay\.vst3(?= )/,
       (_, prefix)=>`${prefix}"${pluginBinary}"`);
     assert(fx!==original, 'Could not pin the exact plugin file in the VST chain');
   }

@@ -17,13 +17,13 @@ Run from the repository root in PowerShell:
 cmake -S . -B build -G "Visual Studio 18 2026" -A x64
 cmake --build build --config Release --target VaginaPlugin audio_tests meter_lifecycle editor_smoke visual_render --parallel
 ctest --test-dir build -C Release --output-on-failure
-& .\build\bin\Release\validator.exe .\build\VST3\Release\VaginaPlugin.vst3
+& .\build\bin\Release\validator.exe .\build\VST3\Release\vajayjay.vst3
 ```
 
 For Visual Studio 2022 use `-G "Visual Studio 17 2022"` in a new build directory.
 The MSVC runtime is statically linked consistently in the SDK and this plugin.
 
-**Artifact:** `build/VST3/Release/VaginaPlugin.vst3/` — this is a bundle directory.
+**Artifact:** `build/VST3/Release/vajayjay.vst3/` — this is a bundle directory.
 Do not distribute only its inner binary. Keep the folder structure.
 
 After successful tests, package the full bundle together with installation

@@ -1,5 +1,9 @@
 # Actual DAW verification — 2026-09-25
 
+Historical evidence for the old 0.1.1 binary and name. Current scripts target
+`vajayjay` 0.1.3; reproducing this exact old result requires the old checkout.
+Do not treat the following DAW results as a test of the renamed binary.
+
 ## Result
 
 REAPER **7.80 Windows x64** loaded the new VaginaPlugin 0.1.1 VST3 using

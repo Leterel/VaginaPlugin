@@ -1,5 +1,19 @@
 # Progress — 2026-09-25
 
+## vajayjay 0.1.3 — 2026-10-22
+
+- Product/factory/editor/bundle/archive names changed to **vajayjay**; repository
+  URL, internal CMake target, class IDs, processor/state and IPC retained.
+- Brown shape now extends and retracts from a fixed abstract slot. Bass energy
+  controls exposed length/thickness/speed; silent state shows an empty emitter.
+- Four deterministic native renders visually inspected (silent, extended,
+  contracted, low energy). Windows validator 47/47 and all four CTest suites
+  passed, including factory-name/version/stable-ID and editor-scale checks.
+- Ubuntu/WSL validator 47/47 and all three suites passed: audio, lifecycle and
+  40 real X11 editor cycles under Xvfb. No new DAW/Wayland/macOS claim.
+- Renamed complete packages and notices, stale-package regression and checksums.
+  Exact coverage and upgrade limits: [VERIFICATION-0.1.3.md](VERIFICATION-0.1.3.md).
+
 ## Linux build and editor fixes — 2026-10-12
 
 - Built Linux x64 on Ubuntu 24.04 under WSL with the pinned official SDK.

@@ -1,4 +1,7 @@
-# VaginaPlugin
+# vajayjay
+
+Formerly VaginaPlugin. Version 0.1.3 uses the name **vajayjay** in the host,
+editor and packages. The repository URL and VST3 class IDs remain unchanged.
 
 **Five bands. Zero sound changes.** An abstract, open-source VST3 visualizer.
 
@@ -7,7 +10,7 @@ independent frequency bands animate simultaneously. There are no explicit visual
 
 | Band | Animation |
 | --- | --- |
-| Below 100 Hz | Brown cylinder |
+| Below 100 Hz | Brown extrusion growing from a fixed abstract slot |
 | 100–500 Hz | Red flowing ribbon |
 | 500–2,000 Hz | Yellow arcing jet |
 | 2,000–6,000 Hz | Occasional white droplets above a higher threshold |
@@ -15,19 +18,26 @@ independent frequency bands animate simultaneously. There are no explicit visual
 
 ## Install on Windows
 
-[Download the Windows VST3 prototype](https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.1).
+The current package is `vajayjay-0.1.3-win-x64.zip`. The existing
+[historical 0.1.1 download](https://github.com/Leterel/VaginaPlugin/releases/tag/v0.1.1)
+still has the old name and predates the new animation and editor scaling.
 
 1. Unzip the Windows x64 download.
-2. Copy the **entire `VaginaPlugin.vst3` folder** to a VST3 location scanned by your DAW,
+2. Copy the **entire `vajayjay.vst3` folder** to a VST3 location scanned by your DAW,
    for example `C:\Program Files\Common Files\VST3` (administrator rights needed),
    or your DAW's configured custom VST3 folder.
-3. Rescan plugins and add **VaginaPlugin** as an **audio effect**, not an instrument.
+3. Rescan plugins and add **vajayjay** as an **audio effect**, not an instrument.
 4. Open its editor and play a track. The host's bypass control suppresses the animation;
    audio still passes through. Remove the folder to uninstall.
 
 The ZIP is portable; it makes no system changes. The plugin is not a standalone app.
 Windows x64 is the tested binary target. A compatible 64-bit VST3 host is required.
 This early build is unsigned.
+
+When upgrading, back up the old `VaginaPlugin.vst3` outside the scanned plugin
+folders before installing the new bundle. Both names use the same class IDs;
+keeping both scanned can make the host choose the old binary. Existing host
+projects still need a rescan; file-name-based host caches may require relinking.
 
 ## Audio behavior
 
@@ -47,8 +57,10 @@ This early build is unsigned.
   after 750 ms or three maximum audio blocks, whichever is longer. Constant tones
   and live input with stopped transport remain visible while callbacks continue.
 
-Source version 0.1.2 adds host-driven editor scaling; the published 0.1.1 download
-above predates this change. See [PROGRESS.md](PROGRESS.md) for verification.
+Version 0.1.2 added host-driven editor scaling. Version 0.1.3 renames the
+product and anchors the brown shape to an abstract emitter: bass energy changes
+its length and animation speed. The processor, IDs and saved state stay compatible.
+See [PROGRESS.md](PROGRESS.md) for verification.
 
 ## Build / contribute
 

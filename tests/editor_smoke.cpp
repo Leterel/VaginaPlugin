@@ -11,6 +11,7 @@
 #include "public.sdk/source/vst/hosting/hostclasses.h"
 #include <cstdlib>
 #include <iostream>
+#include <cstring>
 #include <limits>
 #include "pluginterfaces/gui/iplugviewcontentscalesupport.h"
 
@@ -65,6 +66,19 @@ int wmain(int argc, wchar_t** argv) {
   auto getFactory = reinterpret_cast<GetFactoryProc>(GetProcAddress(library, "GetPluginFactory"));
   require(init && exitDll && getFactory && init(), "initialize VST3 module");
   auto* factory = getFactory(); require(factory != nullptr, "plugin factory");
+  {
+    FUnknownPtr<IPluginFactory2> details(factory);
+    PClassInfo2 info{};
+    require(details && details->getClassInfo2(0,&info)==kResultOk &&
+            std::strcmp(info.name,"vajayjay")==0 && std::strcmp(info.version,"0.1.3")==0,
+            "renamed factory product and release version");
+    const FUID originalProcessor(0x8A9DC5A1,0xD7EF4AE5,0xA134380C,0x1E02D811);
+    require(std::memcmp(info.cid,originalProcessor.toTUID(),16)==0,"original processor class ID retained");
+    require(details->getClassInfo2(1,&info)==kResultOk && std::strcmp(info.name,"vajayjay Controller")==0,
+            "renamed controller product");
+    const FUID originalController(0x7C35FD93,0x0DE942D4,0xBA431EA8,0x3DF1511B);
+    require(std::memcmp(info.cid,originalController.toTUID(),16)==0,"original controller class ID retained");
+  }
   auto host = owned(new TestHost);
   IEditController* controller = nullptr;
   require(factory->createInstance(Meme::controllerId, IEditController::iid,
@@ -81,7 +95,7 @@ int wmain(int argc, wchar_t** argv) {
           controllerConnection->connect(processorConnection) == kResultOk, "connect compiled components");
   ProcessSetup setup{}; setup.sampleRate = 48000; setup.maxSamplesPerBlock = 512; setup.symbolicSampleSize = kSample32;
   require(processor->setupProcessing(setup) == kResultOk && component->setActive(true) == kResultOk, "activate compiled processor");
-  HWND window = CreateWindowExW(0, L"STATIC", L"VaginaPlugin test host",
+  HWND window = CreateWindowExW(0, L"STATIC", L"vajayjay test host",
                               WS_OVERLAPPEDWINDOW, 0, 0, 990, 650,
                               nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
   require(window != nullptr, "hidden native host window");

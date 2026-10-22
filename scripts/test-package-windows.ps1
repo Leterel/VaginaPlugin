@@ -2,7 +2,7 @@ param([string]$BuildDirectory = (Join-Path $PSScriptRoot '..\build'))
 $ErrorActionPreference = 'Stop'
 $testRoot = Join-Path $PSScriptRoot ('..\build-package-test-' + [guid]::NewGuid().ToString('N'))
 $output = Join-Path $testRoot 'output'
-$staleBundle = Join-Path $output 'VaginaPlugin.vst3'
+$staleBundle = Join-Path $output 'vajayjay.vst3'
 New-Item -ItemType Directory -Path $staleBundle -Force | Out-Null
 Set-Content -LiteralPath (Join-Path $staleBundle 'stale-sentinel.txt') -Value 'Must not enter a release.'
 try {
@@ -14,10 +14,11 @@ try {
         $zip = [System.IO.Compression.ZipFile]::OpenRead($archive[0].FullName)
         try {
             $entries = @($zip.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
-            foreach ($required in @('VaginaPlugin.vst3/Contents/x86_64-win/VaginaPlugin.vst3', 'LICENSE', 'THIRD_PARTY_NOTICES.md')) {
+            foreach ($required in @('vajayjay.vst3/Contents/x86_64-win/vajayjay.vst3', 'vajayjay.vst3/Contents/Resources/moduleinfo.json', 'VERIFICATION-0.1.3.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md')) {
                 if ($required -notin $entries) { throw "Missing release entry: $required" }
             }
             if ($entries -match 'stale-sentinel|\.package-') { throw 'Stale or staging content leaked into archive.' }
+            if ($entries -match '^VaginaPlugin\.vst3/') { throw 'Old-name bundle leaked into renamed release.' }
             if (-not ($entries -match '^licenses/')) { throw 'Third-party licenses missing.' }
         } finally { $zip.Dispose() }
         $expected = (Get-FileHash -LiteralPath $archive[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
