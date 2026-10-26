@@ -133,3 +133,10 @@ remain unverified. No source, binary or new host-test claim in this documentatio
   system DLL relocation from Start-Process. No new DAW pass is claimed for 0.1.2.
   Prior 0.1.1 DAW evidence remains specific to that earlier binary. Physical
   audio, DAW high-DPI/multi-monitor use, Linux DAW/Wayland and macOS remain open.
+
+## 26.10.2026 — weiterer isolierter DAW-Versuch
+
+REAPER 7.80 startet wieder, bleibt im frischen Testprofil aber ohne targetbares
+Fenster und ohne ausgeführtes Hostskript. Kein DAW-Pass für 0.1.3. Eigene Prozesse
+beendet, persönliche Projekte/Profile nicht geöffnet. Genauer Umfang:
+DAW-ATTEMPT-20261026.md. Vorhandene Binärdateien und Nachweise bleiben unverändert.
